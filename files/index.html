@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Bot Controller</title>
+    <style type="text/css">
+        .helpText {
+            color: lightgray;
+            user-select: none;
+        }
+        .websocketState {
+            color: darkred;
+            opacity: 0.5;
+        }
+    </style>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            websocket = new WebSocket('ws://localhost:8000/socket');
+            websocket.onopen = function (event) {
+                document.querySelector(".websocketState").innerHTML = "Connected";
+                document.addEventListener("mousedown", mouseDown);
+                document.addEventListener("mouseup", mouseUp);
+                document.addEventListener("mousemove", mouseMove);
+            };
+            websocket.onclose = function (event) {
+                document.querySelector(".websocketState").innerHTML = "Closed";
+            };
+            websocket.onerror = function (event) {
+                document.querySelector(".websocketState").innerHTML = "Error: " + event;
+            };
+
+            function mouseDown() {
+                websocket.send(JSON.stringify({
+                    'mouse': 'down'
+                }));
+            }
+            function mouseUp() {
+                websocket.send(JSON.stringify({
+                    'mouse': 'up'
+                }));
+            }
+            function mouseMove(event) {
+                half_width = document.documentElement.clientWidth / 2;
+                half_height = document.documentElement.clientHeight / 2;
+                websocket.send(JSON.stringify({
+                    'mouse_position': {
+                        x: (event.clientX - half_width) / half_width,
+                        y: (event.clientY - half_height) / half_height,
+                    }
+                }));
+            }
+        });
+    </script>
+</head>
+<body>
+<p class="helpText">Tap on screen to move</p>
+<p class="websocketState"></p>
+</body>
+</html>
